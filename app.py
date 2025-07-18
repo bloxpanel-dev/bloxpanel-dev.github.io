@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from flask import Flask, redirect, request, session, url_for, render_template, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+import json
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
@@ -71,18 +72,16 @@ def login():
     )
     return redirect(discord_login_url)
 
-
-import requests
-from flask import Flask, request, session, redirect
-import json
-
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1234567890/abcdefghijklmnopqrstuvwxyz"
-
 @app.route("/callback")
 def callback():
     code = request.args.get("code")
+    print("🔁 /callback route hit")
+
     if not code:
+        print("❌ No code received from Discord.")
         return "Missing code", 400
+
+    print("🔑 Authorization code received:", code)
 
     # Exchange code for token
     data = {
@@ -93,47 +92,73 @@ def callback():
         "redirect_uri": DISCORD_REDIRECT_URI,
         "scope": "identify",
     }
+
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    token_res = requests.post(f"{API_BASE_URL}/oauth2/token", data=data, headers=headers)
-    token_json = token_res.json()
-    access_token = token_json.get("access_token")
+    try:
+        token_res = requests.post(f"{API_BASE_URL}/oauth2/token", data=data, headers=headers)
+        token_res.raise_for_status()
+        token_json = token_res.json()
+        access_token = token_json.get("access_token")
+        print("✅ Access token retrieved:", access_token)
+    except Exception as e:
+        print("❌ Failed to exchange token:", str(e))
+        return "Token exchange failed", 400
 
     if not access_token:
+        print("❌ Access token missing in token response.")
         return "Failed to get access token", 400
 
     # Fetch user info
-    user_res = requests.get(
-        f"{API_BASE_URL}/users/@me",
-        headers={"Authorization": f"Bearer {access_token}"}
-    )
-    user = user_res.json()
+    try:
+        user_res = requests.get(
+            f"{API_BASE_URL}/users/@me",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+        user_res.raise_for_status()
+        user = user_res.json()
+        print("👤 Discord user info fetched:", user)
+    except Exception as e:
+        print("❌ Failed to fetch user info:", str(e))
+        return "Failed to fetch user info", 400
+
     session["user"] = user
 
-    # Send login log to Discord via webhook
-    send_login_log(user)
+    try:
+        send_login_log(user)
+        print("📨 Webhook log sent successfully.")
+    except Exception as e:
+        print("❌ Failed to send webhook:", str(e))
 
-    return redirect("https://bloxpanel.github.io/")
+    # Add token to frontend URL
+    return redirect(f"https://bloxpanel.github.io/?token={access_token}")
+
 
 def send_login_log(user):
-    username = f"{user['username']}#{user.get('discriminator', '0000')}"
-    user_id = user['id']
-    avatar_url = f"https://cdn.discordapp.com/avatars/{user_id}/{user['avatar']}.png"
+    try:
+        username = f"{user['username']}#{user.get('discriminator', '0000')}"
+        user_id = user['id']
+        avatar_url = f"https://cdn.discordapp.com/avatars/{user_id}/{user['avatar']}.png"
 
-    embed = {
-        "title": "🔐 New Login",
-        "description": f"**{username}** just logged into the dashboard.",
-        "color": 0x3498db,
-        "thumbnail": {"url": avatar_url},
-        "fields": [
-            {"name": "User ID", "value": user_id, "inline": True},
-            {"name": "Locale", "value": user.get("locale", "Unknown"), "inline": True}
-        ]
-    }
+        embed = {
+            "title": "🔐 New Login",
+            "description": f"**{username}** just logged into the dashboard.",
+            "color": 0x3498db,
+            "thumbnail": {"url": avatar_url},
+            "fields": [
+                {"name": "User ID", "value": user_id, "inline": True},
+                {"name": "Locale", "value": user.get("locale", 'Unknown'), "inline": True}
+            ]
+        }
 
-    payload = {"embeds": [embed]}
-    headers = {"Content-Type": "application/json"}
+        payload = {"embeds": [embed]}
+        headers = {"Content-Type": "application/json"}
 
-    requests.post(DISCORD_WEBHOOK_URL, headers=headers, data=json.dumps(payload))
+        response = requests.post(DISCORD_WEBHOOK_URL, headers=headers, data=json.dumps(payload))
+        response.raise_for_status()
+        print("✅ Webhook POST status:", response.status_code)
+    except Exception as e:
+        print("❌ Exception in send_login_log():", str(e))
+
 
 
 @app.route("/logout")
