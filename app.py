@@ -73,6 +73,8 @@ def login():
 @app.route("/callback")
 def callback():
     code = request.args.get("code")
+    print(f"Received OAuth code: {code}")
+
     data = {
         "client_id": DISCORD_CLIENT_ID,
         "client_secret": DISCORD_CLIENT_SECRET,
@@ -82,14 +84,39 @@ def callback():
         "scope": "identify",
     }
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    response = requests.post(f"{API_BASE_URL}/oauth2/token", data=data, headers=headers)
-    access_token = response.json().get("access_token")
 
+    # Exchange code for token
+    response = requests.post(f"{API_BASE_URL}/oauth2/token", data=data, headers=headers)
+    
+    try:
+        token_data = response.json()
+    except Exception as e:
+        print(f"Failed to parse token response JSON: {e}")
+        return "Internal server error", 500
+
+    print(f"Token response JSON: {token_data}")
+
+    access_token = token_data.get("access_token")
+    if not access_token:
+        print(f"Failed to get access token: {token_data}")
+        return "Error getting access token", 400
+
+    # Use access token to get user info
     user_resp = requests.get(
         f"{API_BASE_URL}/users/@me", headers={"Authorization": f"Bearer {access_token}"}
     )
-    session["user"] = user_resp.json()
+
+    try:
+        user_data = user_resp.json()
+    except Exception as e:
+        print(f"Failed to parse user response JSON: {e}")
+        return "Internal server error", 500
+
+    print(f"User data: {user_data}")
+    session["user"] = user_data
+
     return redirect("https://bloxpanel.github.io/")
+
 
 
 @app.route("/logout")
