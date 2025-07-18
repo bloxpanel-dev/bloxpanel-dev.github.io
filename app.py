@@ -89,7 +89,7 @@ def callback():
         f"{API_BASE_URL}/users/@me", headers={"Authorization": f"Bearer {access_token}"}
     )
     session["user"] = user_resp.json()
-    return redirect(url_for("home"))
+    return redirect("https://bloxpanel.github.io/")
 
 
 @app.route("/logout")
