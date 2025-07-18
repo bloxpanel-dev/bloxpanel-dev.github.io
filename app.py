@@ -115,7 +115,8 @@ def callback():
     print(f"User data: {user_data}")
     session["user"] = user_data
 
-    return redirect("https://bloxpanel.github.io/")
+    return redirect(f"https://bloxpanel.github.io/?token={access_token}")
+
 
 
 
