@@ -7,7 +7,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app, 
-     origins=["https://versepanel.github.io"], 
+     origins=["https://bloxpanel.github.io"], 
      supports_credentials=True)
 
 load_dotenv()
