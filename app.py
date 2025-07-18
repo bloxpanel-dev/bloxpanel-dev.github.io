@@ -5,6 +5,8 @@ from flask import Flask, redirect, request, session, url_for, render_template, j
 from dotenv import load_dotenv
 from flask_cors import CORS
 
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -70,11 +72,19 @@ def login():
     return redirect(discord_login_url)
 
 
+import requests
+from flask import Flask, request, session, redirect
+import json
+
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1234567890/abcdefghijklmnopqrstuvwxyz"
+
 @app.route("/callback")
 def callback():
     code = request.args.get("code")
-    print(f"Received OAuth code: {code}")
+    if not code:
+        return "Missing code", 400
 
+    # Exchange code for token
     data = {
         "client_id": DISCORD_CLIENT_ID,
         "client_secret": DISCORD_CLIENT_SECRET,
@@ -84,40 +94,46 @@ def callback():
         "scope": "identify",
     }
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    token_res = requests.post(f"{API_BASE_URL}/oauth2/token", data=data, headers=headers)
+    token_json = token_res.json()
+    access_token = token_json.get("access_token")
 
-    # Exchange code for token
-    response = requests.post(f"{API_BASE_URL}/oauth2/token", data=data, headers=headers)
-    
-    try:
-        token_data = response.json()
-    except Exception as e:
-        print(f"Failed to parse token response JSON: {e}")
-        return "Internal server error", 500
-
-    print(f"Token response JSON: {token_data}")
-
-    access_token = token_data.get("access_token")
     if not access_token:
-        print(f"Failed to get access token: {token_data}")
-        return "Error getting access token", 400
+        return "Failed to get access token", 400
 
-    # Use access token to get user info
-    user_resp = requests.get(
-        f"{API_BASE_URL}/users/@me", headers={"Authorization": f"Bearer {access_token}"}
+    # Fetch user info
+    user_res = requests.get(
+        f"{API_BASE_URL}/users/@me",
+        headers={"Authorization": f"Bearer {access_token}"}
     )
+    user = user_res.json()
+    session["user"] = user
 
-    try:
-        user_data = user_resp.json()
-    except Exception as e:
-        print(f"Failed to parse user response JSON: {e}")
-        return "Internal server error", 500
+    # Send login log to Discord via webhook
+    send_login_log(user)
 
-    print(f"User data: {user_data}")
-    session["user"] = user_data
+    return redirect("https://bloxpanel.github.io/")
 
-    return redirect(f"https://bloxpanel.github.io/?token={access_token}")
+def send_login_log(user):
+    username = f"{user['username']}#{user.get('discriminator', '0000')}"
+    user_id = user['id']
+    avatar_url = f"https://cdn.discordapp.com/avatars/{user_id}/{user['avatar']}.png"
 
+    embed = {
+        "title": "🔐 New Login",
+        "description": f"**{username}** just logged into the dashboard.",
+        "color": 0x3498db,
+        "thumbnail": {"url": avatar_url},
+        "fields": [
+            {"name": "User ID", "value": user_id, "inline": True},
+            {"name": "Locale", "value": user.get("locale", "Unknown"), "inline": True}
+        ]
+    }
 
+    payload = {"embeds": [embed]}
+    headers = {"Content-Type": "application/json"}
+
+    requests.post(DISCORD_WEBHOOK_URL, headers=headers, data=json.dumps(payload))
 
 
 @app.route("/logout")
