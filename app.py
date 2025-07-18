@@ -5,11 +5,10 @@ from flask import Flask, redirect, request, session, url_for, render_template, j
 from dotenv import load_dotenv
 from flask_cors import CORS
 
-app = Flask(__name__)
-CORS(app, origins=["https://bloxpanel.github.io"])
-
 load_dotenv()
+
 app = Flask(__name__)
+CORS(app, origins=["https://bloxpanel.github.io"], supports_credentials=True)
 app.secret_key = os.getenv("SECRET_KEY")
 
 DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
