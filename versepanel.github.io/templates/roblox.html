@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Player Lookup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10rem;
+    }
+    
+    .sidebar {
+    width: 250px;
+    background-color: #1f1f1f;
+    padding: 1.5rem;
+    flex-shrink: 0;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    font-size: 20px;
+  }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .sidebar a:hover {
+      color: #0d6efd;
+    }
+
+    .content {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      background-color: rgba(31, 25, 25, 0.74);
+    }
+    input, button {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      outline: none;
+    }
+    input {
+      background: #222;
+      color: #eee;
+      border: 1px solid #444;
+      width: 280px;
+      margin-right: 1rem;
+    }
+    button {
+      background: #22c55e;
+      color: #111;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background: #16a34a;
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>Dashboard</h2>
+    <a href="/">Home</a>
+    <a href="/roblox">Roblox Lookup</a>
+    <a href="/discord">Discord Info</a>
+    <a href="/settings">Settings</a>
+    <!-- Add more sidebar links here -->
+  </nav>
+
+
+  <div class="content">
+    <h1>🔍 Player Lookup</h1>
+    <h3>Search by username, ID, or Discord</h3>
+    <form id="lookupForm">
+      <input type="text" id="username" placeholder="Enter Username" required />
+      <button type="submit">Lookup</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('lookupForm');
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      if (username) {
+        // Redirect to /details page with username as query param
+        window.location.href = `/details?username=${encodeURIComponent(username)}`;
+      }
+    });
+  </script>
+</body>
+</html>
