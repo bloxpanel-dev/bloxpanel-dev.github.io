@@ -1,1 +1,2 @@
 # bloxpanel-dev.github.io
+This code is to run a website that has Roblox API and Discord API. The code is not complete as of writing this (7/18/25), and still has a lot of work to be done. This code contains front end and back end code separated. I use Render to load backend code and GitHub Pages to load frontend code.
