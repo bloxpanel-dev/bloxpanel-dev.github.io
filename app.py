@@ -72,6 +72,7 @@ def login():
     )
     return redirect(discord_login_url)
 
+
 @app.route("/callback")
 def callback():
     code = request.args.get("code")
@@ -122,7 +123,21 @@ def callback():
         return "Failed to fetch user info", 400
 
     session["user"] = user
+    user_id = user.get("id")
 
+    # 🔒 Check if user is allowed
+    try:
+        with open("allowed_users.json", "r") as f:
+            allowed_users = json.load(f).get("allowedUsers", [])
+
+        if user_id not in allowed_users:
+            print(f"🚫 Access denied for user ID: {user_id}")
+            return "Access denied: You are not authorized to use this dashboard.", 403
+    except Exception as e:
+        print("❌ Error reading whitelist:", str(e))
+        return "Server error", 500
+
+    # Optional: Send login webhook log
     try:
         send_login_log(user)
         print("📨 Webhook log sent successfully.")
@@ -159,6 +174,7 @@ def send_login_log(user):
     except Exception as e:
         print("❌ Exception in send_login_log():", str(e))
 
+
 @app.route("/check-access", methods=["GET"])
 def check_access():
     auth_header = request.headers.get("Authorization")
@@ -190,6 +206,7 @@ def check_access():
     except Exception as e:
         print("❌ Error reading whitelist:", str(e))
         return jsonify({"allowed": False, "error": "Server error"}), 500
+
 
 
 
