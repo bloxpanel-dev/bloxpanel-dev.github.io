@@ -11,7 +11,7 @@ DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["https://bloxpanel.github.io"], supports_credentials=True)
+CORS(app, origins=["https://bloxpanel-dev.netlify.app/"], supports_credentials=True)
 app.secret_key = os.getenv("SECRET_KEY")
 
 DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
