@@ -132,7 +132,8 @@ def callback():
 
         if user_id not in allowed_users:
             print(f"🚫 Access denied for user ID: {user_id}")
-            return "Access denied: You are not authorized to use this dashboard.", 403
+            return render_template("unauthorized.html"), 403
+
     except Exception as e:
         print("❌ Error reading whitelist:", str(e))
         return "Server error", 500
