@@ -130,7 +130,7 @@ def callback():
         print("❌ Failed to send webhook:", str(e))
 
     # Add token to frontend URL
-    return redirect(f"https://bloxpanel.github.io/?token={access_token}")
+    return redirect(f"https://bloxpanel-dev.netlify.app/?token={access_token}")
 
 
 def send_login_log(user):
