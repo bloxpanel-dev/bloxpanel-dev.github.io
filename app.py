@@ -346,6 +346,13 @@ def details():
 def settings():
     return render_template("settings.html")
 
+@app.route("/members", methods=["GET", "POST"])
+def members():
+    return render_template("members.html")
+
+@app.route("/permissions", methods=["GET", "POST"])
+def permissions():
+    return render_template("permissions.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
