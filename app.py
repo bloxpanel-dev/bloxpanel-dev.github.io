@@ -132,7 +132,7 @@ def callback():
 
         if user_id not in allowed_users:
             print(f"🚫 Access denied for user ID: {user_id}")
-            return render_template("unauthorized.html"), 403
+            return redirect("/callback/access-denied")
 
     except Exception as e:
         print("❌ Error reading whitelist:", str(e))
@@ -149,6 +149,9 @@ def callback():
     # Add token to frontend URL
     return redirect(f"https://bloxpanel-dev.netlify.app/?token={access_token}")
 
+@app.route("/callback/access-denied")
+def access_denied():
+    return render_template("unauthorized.html"), 403
 
 def send_login_log(user):
     try:
