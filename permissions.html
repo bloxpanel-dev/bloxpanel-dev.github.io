@@ -189,9 +189,22 @@
         <button class="add-role" onclick="addNewRole()">ADD NEW</button>
       </div>
 
-      <div class="permissions-info" id="permissionsInfo">
-        <i class="bi bi-folder"></i>
-        <p>Please select a role from the list on the left to edit its permissions.</p>
+      <div class="permissions-info" id="permissionsInfo" style="display: none;">
+        <ul class="nav nav-tabs" id="permissionTabs">
+          <li class="nav-item">
+            <a class="nav-link active" href="#" onclick="switchTab('general')">GENERAL</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="switchTab('permissions')">PERMISSIONS</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="switchTab('ratelimits')">RATELIMITS</a>
+          </li>
+        </ul>
+
+        <div id="tabContent" class="p-4">
+          <!-- Tab contents will be injected dynamically -->
+        </div>
       </div>
     </div>
 
@@ -203,8 +216,7 @@
     </div>
   </div>
 
-  <!-- JavaScript Logic -->
-<script>
+  <script>
   const rolesContainer = document.getElementById('rolesContainer');
   const permissionsInfo = document.getElementById('permissionsInfo');
   const customPermissionsList = document.getElementById('customPermissionsList');
@@ -240,6 +252,53 @@
     });
   }
 
+  function renderPermissionsTab(role) {
+    permissionsInfo.style.display = 'block';
+
+    const tabContent = document.getElementById('tabContent');
+    tabContent.innerHTML = `
+      <h5>General Configuration</h5>
+      <div class="mb-3">
+        <label for="roleNameInput" class="form-label">Role Name</label>
+        <input type="text" id="roleNameInput" class="form-control bg-dark text-white" value="${role}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Role Color</label><br>
+        <button class="btn btn-dark border"><i class="bi bi-palette"></i></button>
+      </div>
+      <hr>
+      <h6>Role Name</h6>
+      <p class="text-muted" style="font-size: 14px;">
+        The name of the role can be customized per your liking. This role name is public to any member of the organization,
+        so make sure it's not anything bad. The role name will be reflected when you assign roles in the Members tab.
+      </p>
+
+      <h6>Department Name</h6>
+      <p class="text-muted" style="font-size: 14px;">
+        Departments are helpful when you want to restrict roles from being managed by a certain role. For example, an appeals
+        department manager would not be able to manage or give out roles for the community management department.
+        By default, the department with empty name: "" is the department of every role; leave a role department blank
+        to have it be default. Department Names cannot have spaces or special characters.
+      </p>
+    `;
+  }
+
+  function switchTab(tab) {
+    const tabContent = document.getElementById('tabContent');
+    const navLinks = document.querySelectorAll('#permissionTabs .nav-link');
+    navLinks.forEach(link => link.classList.remove('active'));
+
+    const activeLink = [...navLinks].find(link => link.textContent === tab.toUpperCase());
+    if (activeLink) activeLink.classList.add('active');
+
+    if (tab === 'general') {
+      const selected = document.querySelector('.role-selected');
+      if (selected) renderPermissionsTab(selected.dataset.role);
+    } else {
+      tabContent.innerHTML = `<p class="text-muted">Content for ${tab.toUpperCase()} will go here.</p>`;
+    }
+  }
+
   rolesContainer.addEventListener('click', function (e) {
     const target = e.target;
     if (target.classList.contains('role-item')) {
@@ -256,10 +315,9 @@
 
       target.classList.add('role-selected');
 
-      permissionsInfo.innerHTML = `
-        <h3>${role} Permissions</h3>
-        <p>Here you can configure permissions for the <strong>${role}</strong> role.</p>
-      `;
+      // Show the tabbed permissions panel and render the general tab
+      permissionsInfo.style.display = 'block';
+      switchTab('general');
     }
   });
 
@@ -268,8 +326,13 @@
     if (!roleName) return;
 
     roleName = roleName.trim();
-    if (!roleName || DEFAULT_ROLES.includes(roleName)) {
-      alert("Invalid or duplicate role name.");
+    if (!/^[\w-]+$/.test(roleName)) {
+      alert("Role name must not contain spaces or special characters.");
+      return;
+    }
+
+    if (DEFAULT_ROLES.includes(roleName)) {
+      alert("This role name is reserved.");
       return;
     }
 
@@ -282,6 +345,7 @@
     currentRoles.push(roleName);
     saveRoles(currentRoles);
     renderRoles(roleName); // auto-select the new role
+    switchTab('general');
   }
 
   function addCustomPermission() {
