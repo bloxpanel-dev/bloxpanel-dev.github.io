@@ -204,60 +204,99 @@
   </div>
 
   <!-- JavaScript Logic -->
-  <script>
-    const rolesContainer = document.getElementById('rolesContainer');
-    const permissionsInfo = document.getElementById('permissionsInfo');
-    const customPermissionsList = document.getElementById('customPermissionsList');
+<script>
+  const rolesContainer = document.getElementById('rolesContainer');
+  const permissionsInfo = document.getElementById('permissionsInfo');
+  const customPermissionsList = document.getElementById('customPermissionsList');
 
-    // When a role is selected
-    rolesContainer.addEventListener('click', function (e) {
-      const target = e.target;
-      if (target.classList.contains('role-item')) {
-        const role = target.dataset.role;
+  const DEFAULT_ROLES = ['Owner', 'Everyone'];
 
-        if (target.classList.contains('role-locked')) {
-          alert("The Owner role cannot be edited.");
-          return;
-        }
+  function getStoredRoles() {
+    const saved = localStorage.getItem('roles');
+    return saved ? JSON.parse(saved) : DEFAULT_ROLES;
+  }
 
-        // Remove highlight from all roles
-        document.querySelectorAll('.role-item').forEach(item => {
-          item.classList.remove('role-selected');
-        });
+  function saveRoles(roles) {
+    localStorage.setItem('roles', JSON.stringify(roles));
+  }
 
-        // Highlight selected
-        target.classList.add('role-selected');
+  function renderRoles(selected = null) {
+    rolesContainer.innerHTML = '';
 
-        // Update permissions section
-        permissionsInfo.innerHTML = `
-          <h3>${role} Permissions</h3>
-          <p>Here you can configure permissions for the <strong>${role}</strong> role.</p>
-        `;
+    const roles = getStoredRoles();
+    roles.forEach(role => {
+      const roleDiv = document.createElement('div');
+      roleDiv.classList.add('role-item');
+      roleDiv.dataset.role = role;
+      roleDiv.textContent = role;
+
+      if (role === 'Owner') {
+        roleDiv.classList.add('role-locked');
+      } else if (role === selected) {
+        roleDiv.classList.add('role-selected');
       }
+
+      rolesContainer.appendChild(roleDiv);
     });
+  }
 
-    // Add New Role Button
-    function addNewRole() {
-      const roleName = prompt("Enter new role name:");
-      if (roleName) {
-        const id = `role-${Date.now()}`;
-        const label = document.createElement('label');
-        label.innerHTML = `<input type="radio" name="role" value="${roleName}" id="${id}"> ${roleName}`;
-        rolesContainer.appendChild(label);
+  rolesContainer.addEventListener('click', function (e) {
+    const target = e.target;
+    if (target.classList.contains('role-item')) {
+      const role = target.dataset.role;
+
+      if (target.classList.contains('role-locked')) {
+        alert("The Owner role cannot be edited.");
+        return;
       }
+
+      document.querySelectorAll('.role-item').forEach(item =>
+        item.classList.remove('role-selected')
+      );
+
+      target.classList.add('role-selected');
+
+      permissionsInfo.innerHTML = `
+        <h3>${role} Permissions</h3>
+        <p>Here you can configure permissions for the <strong>${role}</strong> role.</p>
+      `;
+    }
+  });
+
+  function addNewRole() {
+    let roleName = prompt("Enter new role name:");
+    if (!roleName) return;
+
+    roleName = roleName.trim();
+    if (!roleName || DEFAULT_ROLES.includes(roleName)) {
+      alert("Invalid or duplicate role name.");
+      return;
     }
 
-    // Add Custom Permission Button
-    function addCustomPermission() {
-      const permission = prompt("Enter a custom permission:");
-      if (permission) {
-        const li = document.createElement('li');
-        li.textContent = permission;
-        li.style.fontSize = '14px';
-        li.style.color = '#ccc';
-        customPermissionsList.appendChild(li);
-      }
+    const currentRoles = getStoredRoles();
+    if (currentRoles.includes(roleName)) {
+      alert("Role already exists.");
+      return;
     }
-  </script>
+
+    currentRoles.push(roleName);
+    saveRoles(currentRoles);
+    renderRoles(roleName); // auto-select the new role
+  }
+
+  function addCustomPermission() {
+    const permission = prompt("Enter a custom permission:");
+    if (permission) {
+      const li = document.createElement('li');
+      li.textContent = permission;
+      li.style.fontSize = '14px';
+      li.style.color = '#ccc';
+      customPermissionsList.appendChild(li);
+    }
+  }
+
+  // Initialize roles on page load
+  renderRoles();
+</script>
 </body>
 </html>
