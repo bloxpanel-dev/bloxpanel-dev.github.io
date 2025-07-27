@@ -137,6 +137,31 @@
       background-color: #ff004c;
       color: white;
     }
+
+    .role-item {
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      background-color: #2a2a2a;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      font-weight: normal;
+    }
+
+    .role-item:hover {
+      background-color: #333;
+    }
+
+    .role-selected {
+      font-weight: bold;
+      background-color: #444;
+    }
+
+    .role-locked {
+      color: gray;
+      cursor: not-allowed;
+      background-color: #1f1f1f;
+    }
   </style>
 </head>
 <body>
@@ -158,8 +183,8 @@
       <div class="roles-list">
         <h5>Roles</h5>
         <div id="rolesContainer">
-          <label><input type="radio" name="role" value="Owner" checked /> Owner</label>
-          <label><input type="radio" name="role" value="Everyone" /> Everyone</label>
+          <div class="role-item role-locked" data-role="Owner">Owner</div>
+          <div class="role-item" data-role="Everyone">Everyone</div>
         </div>
         <button class="add-role" onclick="addNewRole()">ADD NEW</button>
       </div>
@@ -185,10 +210,29 @@
     const customPermissionsList = document.getElementById('customPermissionsList');
 
     // When a role is selected
-    rolesContainer.addEventListener('change', function (e) {
-      if (e.target.name === 'role') {
-        const selectedRole = e.target.value;
-        permissionsInfo.innerHTML = `<h3>${selectedRole} Permissions</h3><p>Here you can configure permissions for the <strong>${selectedRole}</strong> role.</p>`;
+    rolesContainer.addEventListener('click', function (e) {
+      const target = e.target;
+      if (target.classList.contains('role-item')) {
+        const role = target.dataset.role;
+
+        if (target.classList.contains('role-locked')) {
+          alert("The Owner role cannot be edited.");
+          return;
+        }
+
+        // Remove highlight from all roles
+        document.querySelectorAll('.role-item').forEach(item => {
+          item.classList.remove('role-selected');
+        });
+
+        // Highlight selected
+        target.classList.add('role-selected');
+
+        // Update permissions section
+        permissionsInfo.innerHTML = `
+          <h3>${role} Permissions</h3>
+          <p>Here you can configure permissions for the <strong>${role}</strong> role.</p>
+        `;
       }
     });
 
