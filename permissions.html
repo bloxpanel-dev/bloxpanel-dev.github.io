@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>BloxPanel Permissions</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body {
       background-color: #121212;
@@ -156,12 +157,14 @@
     <div class="roles-section">
       <div class="roles-list">
         <h5>Roles</h5>
-        <label><input type="radio" name="role" checked /> Owner</label>
-        <label><input type="radio" name="role" /> Everyone</label>
-        <button class="add-role">ADD NEW</button>
+        <div id="rolesContainer">
+          <label><input type="radio" name="role" value="Owner" checked /> Owner</label>
+          <label><input type="radio" name="role" value="Everyone" /> Everyone</label>
+        </div>
+        <button class="add-role" onclick="addNewRole()">ADD NEW</button>
       </div>
 
-      <div class="permissions-info">
+      <div class="permissions-info" id="permissionsInfo">
         <i class="bi bi-folder"></i>
         <p>Please select a role from the list on the left to edit its permissions.</p>
       </div>
@@ -170,11 +173,47 @@
     <div class="custom-permissions">
       <h5>Custom Permissions</h5>
       <p>Add custom permissions to roles that can be queried in-game for in-game access/feature control.</p>
-      <button>+</button>
+      <button onclick="addCustomPermission()">+</button>
+      <ul id="customPermissionsList" style="margin-top: 10px;"></ul>
     </div>
   </div>
 
-  <!-- Bootstrap Icons CDN for the folder icon -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- JavaScript Logic -->
+  <script>
+    const rolesContainer = document.getElementById('rolesContainer');
+    const permissionsInfo = document.getElementById('permissionsInfo');
+    const customPermissionsList = document.getElementById('customPermissionsList');
+
+    // When a role is selected
+    rolesContainer.addEventListener('change', function (e) {
+      if (e.target.name === 'role') {
+        const selectedRole = e.target.value;
+        permissionsInfo.innerHTML = `<h3>${selectedRole} Permissions</h3><p>Here you can configure permissions for the <strong>${selectedRole}</strong> role.</p>`;
+      }
+    });
+
+    // Add New Role Button
+    function addNewRole() {
+      const roleName = prompt("Enter new role name:");
+      if (roleName) {
+        const id = `role-${Date.now()}`;
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="radio" name="role" value="${roleName}" id="${id}"> ${roleName}`;
+        rolesContainer.appendChild(label);
+      }
+    }
+
+    // Add Custom Permission Button
+    function addCustomPermission() {
+      const permission = prompt("Enter a custom permission:");
+      if (permission) {
+        const li = document.createElement('li');
+        li.textContent = permission;
+        li.style.fontSize = '14px';
+        li.style.color = '#ccc';
+        customPermissionsList.appendChild(li);
+      }
+    }
+  </script>
 </body>
 </html>
