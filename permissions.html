@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,23 +6,26 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     body {
-      min-height: 100vh;
-      display: flex;
       background-color: #121212;
       color: white;
+      margin: 0;
+      font-family: sans-serif;
+      height: 100vh;
+      overflow: hidden;
     }
+
     .sidebar {
-    width: 250px;
-    background-color: #1f1f1f;
-    padding: 1.5rem;
-    flex-shrink: 0;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    overflow-y: auto;
-    font-size: 20px;
-  }
+      width: 250px;
+      background-color: #1f1f1f;
+      padding: 1.5rem;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+      font-size: 20px;
+    }
+
     .sidebar a {
       color: white;
       text-decoration: none;
@@ -30,13 +33,108 @@
       margin-bottom: 1rem;
       font-weight: 500;
     }
+
     .sidebar a:hover {
       color: #0d6efd;
     }
-    .content {
+
+    .main-container {
       margin-left: 250px;
       padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      color: #ccc;
+      font-size: 18px;
+      margin-bottom: 2rem;
+    }
+
+    .roles-section {
+      display: flex;
       flex-grow: 1;
+    }
+
+    .roles-list {
+      width: 200px;
+      background-color: #1a1a1a;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-right: 2rem;
+    }
+
+    .roles-list h5 {
+      margin-bottom: 1rem;
+    }
+
+    .roles-list label {
+      display: block;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .add-role {
+      color: #ff004c;
+      border: none;
+      background: none;
+      font-weight: bold;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .permissions-info {
+      flex-grow: 1;
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .permissions-info i {
+      font-size: 36px;
+      margin-bottom: 1rem;
+    }
+
+    .custom-permissions {
+      margin-top: auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid #333;
+    }
+
+    .custom-permissions h5 {
+      margin-bottom: 0.5rem;
+    }
+
+    .custom-permissions p {
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    .custom-permissions button {
+      margin-top: 0.5rem;
+      color: #ff004c;
+      border: 1px solid #ff004c;
+      background: transparent;
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .custom-permissions button:hover {
+      background-color: #ff004c;
+      color: white;
     }
   </style>
 </head>
@@ -49,12 +147,34 @@
     <a href="/settings.html">Settings</a>
     <a href="/permissions.html">Permissions</a>
     <a href="/members.html">Members</a>
-    <!-- Add more sidebar links here -->
   </nav>
 
-  <div class="content">
-    <h1>🔍 Access Control</h1>
-    <h3>Configure Organization Roles & Permissions</h3>
+  <div class="main-container">
+    <div class="page-title">🔍 Access Control</div>
+    <div class="subtitle">Configure Organization Roles & Permissions</div>
+
+    <div class="roles-section">
+      <div class="roles-list">
+        <h5>Roles</h5>
+        <label><input type="radio" name="role" checked /> Owner</label>
+        <label><input type="radio" name="role" /> Everyone</label>
+        <button class="add-role">ADD NEW</button>
+      </div>
+
+      <div class="permissions-info">
+        <i class="bi bi-folder"></i>
+        <p>Please select a role from the list on the left to edit its permissions.</p>
+      </div>
+    </div>
+
+    <div class="custom-permissions">
+      <h5>Custom Permissions</h5>
+      <p>Add custom permissions to roles that can be queried in-game for in-game access/feature control.</p>
+      <button>+</button>
+    </div>
   </div>
+
+  <!-- Bootstrap Icons CDN for the folder icon -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </body>
 </html>
