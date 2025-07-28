@@ -239,6 +239,58 @@
         console.error(err);
       });
   }
+
+  // Cache the chatlogs container
+const chatlogsContainer = document.getElementById('chatlogs');
+
+async function fetchChatlogs(username) {
+  if (!username) {
+    chatlogsContainer.innerHTML = `<p>No username specified.</p>`;
+    return;
+  }
+
+  chatlogsContainer.innerHTML = `<p>Loading chatlogs for ${username}...</p>`;
+
+  try {
+    const response = await fetch(`https://bloxpanel-dev-backend-h0mc.onrender.com/api/chatlogs?username=${encodeURIComponent(username)}`);
+    if (!response.ok) throw new Error('Failed to fetch chat logs');
+
+    const logs = await response.json();
+
+    if (!logs.length) {
+      chatlogsContainer.innerHTML = `<p>No chat logs found for ${username}.</p>`;
+      return;
+    }
+
+    chatlogsContainer.innerHTML = logs.map(log => `
+      <div class="chatlog-entry" style="margin-bottom: 0.75rem; padding: 0.5rem; background: #333; border-radius: 0.3rem;">
+        <strong>${log.username}</strong>: ${log.message} <br/>
+        <small style="color:#999;">${new Date(log.timestamp).toLocaleString()}</small>
+      </div>
+    `).join('');
+  } catch (error) {
+    chatlogsContainer.innerHTML = `<p>Error loading chat logs: ${error.message}</p>`;
+  }
+}
+
+// Modify your tab click listener to load chatlogs on demand
+tabs.forEach(tab => {
+  tab.addEventListener('click', e => {
+    e.preventDefault();
+    tabs.forEach(t => t.classList.remove('active'));
+    panes.forEach(p => p.style.display = 'none');
+
+    tab.classList.add('active');
+    const target = tab.getAttribute('data-tab');
+    const pane = document.getElementById(target);
+    pane.style.display = 'block';
+
+    // If the chatlogs tab is selected, fetch chatlogs
+    if (target === 'chatlogs') {
+      fetchChatlogs(username);
+    }
+  });
+});
 </script>
 </body>
 </html>

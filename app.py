@@ -18,6 +18,7 @@ DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
 DISCORD_REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI")
 API_BASE_URL = "https://discord.com/api"
+CHATLOG_FILE = "chatlogs.json"
 
 
 def parse_roblox_date(date_str):
@@ -37,6 +38,16 @@ def parse_roblox_date(date_str):
             return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
         except Exception:
             return None
+        
+def load_chatlogs():
+    if not os.path.exists(CHATLOG_FILE):
+        return []
+    with open(CHATLOG_FILE, "r") as f:
+        return json.load(f)
+
+def save_chatlogs(logs):
+    with open(CHATLOG_FILE, "w") as f:
+        json.dump(logs, f, indent=2)
 
 
 @app.route("/")
@@ -353,6 +364,39 @@ def members():
 @app.route("/permissions", methods=["GET", "POST"])
 def permissions():
     return render_template("permissions.html")
+
+@app.route("/api/chatlogs", methods=["POST"])
+def add_chatlog():
+    data = request.get_json()
+
+    required_fields = ["username", "message", "timestamp"]
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    logs = load_chatlogs()
+    logs.append({
+        "username": data["username"],
+        "userId": data.get("userId", None),
+        "message": data["message"],
+        "timestamp": data["timestamp"]
+    })
+    save_chatlogs(logs)
+
+    return jsonify({"success": True}), 200
+
+@app.route("/api/chatlogs", methods=["GET"])
+def get_chatlogs():
+    username = request.args.get("username")
+    logs = load_chatlogs()
+
+    if username:
+        # Filter logs to only those that match the username (case-insensitive)
+        filtered_logs = [log for log in logs if log.get("username", "").lower() == username.lower()]
+        return jsonify(filtered_logs), 200
+
+    # If no username provided, return all logs (or maybe you want to restrict this)
+    return jsonify(logs), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True)
