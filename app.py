@@ -63,7 +63,7 @@ def get_user():
     return jsonify({"logged_in": False})
 
 
-@app.route("/api/player")
+@app.route("/api/player", methods=["GET"])
 @cross_origin(origins="https://bloxpanel-dev.netlify.app", supports_credentials=True)
 def api_player():
     
