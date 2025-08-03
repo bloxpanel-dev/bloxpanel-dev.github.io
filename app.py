@@ -12,7 +12,7 @@ load_dotenv()
 
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "https://bloxpanel-dev.netlify.app"}}, supports_credentials=True)
 app.secret_key = os.getenv("SECRET_KEY")
 
 DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
