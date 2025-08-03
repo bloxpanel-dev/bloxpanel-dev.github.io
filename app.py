@@ -3,7 +3,7 @@ import requests
 from datetime import datetime, timezone
 from flask import Flask, redirect, request, session, url_for, render_template, jsonify
 from dotenv import load_dotenv
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import json
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
@@ -12,7 +12,7 @@ load_dotenv()
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "https://bloxpanel-dev.netlify.app"}}, supports_credentials=True)
+CORS(app, supports_credentials=True)
 app.secret_key = os.getenv("SECRET_KEY")
 
 DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
@@ -64,7 +64,9 @@ def get_user():
 
 
 @app.route("/api/player")
+@cross_origin(origins="https://bloxpanel-dev.netlify.app", supports_credentials=True)
 def api_player():
+    
     username = request.args.get("username")
     if not username:
         return jsonify({"error": "No username provided"}), 400
