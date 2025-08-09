@@ -208,37 +208,48 @@
     return urlParams.get(param);
   }
 
-  const username = getQueryParam('username');
-  if (!username) {
-    document.getElementById('username-display').textContent = "No username specified";
+let searchValue = getQueryParam('username') || getQueryParam('userid');
+let isIdSearch = !!getQueryParam('userid');
+
+if (!searchValue) {
+  document.getElementById('username-display').textContent = "No username or ID specified";
+} else {
+  if (isIdSearch) {
+    document.getElementById('username-display').textContent = `User ID: ${searchValue}`;
+    document.getElementById('user-tag').textContent = `(searched by ID)`;
   } else {
-    document.getElementById('username-display').textContent = username;
-    document.getElementById('user-tag').textContent = `@${username.toLowerCase()}`;
-
-    // Fetch user data from your API endpoint (adjust this URL!)
-    fetch(`https://bloxpanel-dev-backend-h0mc.onrender.com/api/player?username=${encodeURIComponent(username)}`)
-      .then(res => res.json())
-      .then(data => {
-        if(data.error) {
-          document.getElementById('username-display').textContent = `Error: ${data.error}`;
-          return;
-        }
-
-        // Populate the fields
-        document.getElementById('avatar-large').src = data.avatarBustUrl || '';
-        document.getElementById('friends').textContent = data.friends || 'N/A';
-        document.getElementById('followers').textContent = data.followers || 'N/A';
-        document.getElementById('following').textContent = data.following || 'N/A';
-        document.getElementById('account-age').textContent = data.accountAge || 'N/A';
-        document.getElementById('vc-status').textContent = data.voiceChat || 'Unknown';
-        document.getElementById('safe-chat').textContent = data.safeChat || 'Unknown';
-        document.getElementById('language').textContent = data.language || 'en-us';
-      })
-      .catch(err => {
-        document.getElementById('username-display').textContent = 'Failed to load user data.';
-        console.error(err);
-      });
+    document.getElementById('username-display').textContent = searchValue;
+    document.getElementById('user-tag').textContent = `@${searchValue.toLowerCase()}`;
   }
+
+  // Fetch user data from backend (supports both username and userid)
+  let param = isIdSearch ? `userid=${encodeURIComponent(searchValue)}` 
+                         : `username=${encodeURIComponent(searchValue)}`;
+
+  fetch(`https://bloxpanel-dev-backend-h0mc.onrender.com/api/player?${param}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        document.getElementById('username-display').textContent = `Error: ${data.error}`;
+        return;
+      }
+
+      // Populate fields
+      document.getElementById('avatar-large').src = data.avatarBustUrl || '';
+      document.getElementById('friends').textContent = data.friends || 'N/A';
+      document.getElementById('followers').textContent = data.followers || 'N/A';
+      document.getElementById('following').textContent = data.following || 'N/A';
+      document.getElementById('account-age').textContent = data.accountAge || 'N/A';
+      document.getElementById('vc-status').textContent = data.voiceChat || 'Unknown';
+      document.getElementById('safe-chat').textContent = data.safeChat || 'Unknown';
+      document.getElementById('language').textContent = data.language || 'en-us';
+    })
+    .catch(err => {
+      document.getElementById('username-display').textContent = 'Failed to load user data.';
+      console.error(err);
+    });
+}
+
 
   // Cache the chatlogs container
 const chatlogsContainer = document.getElementById('chatlogs');

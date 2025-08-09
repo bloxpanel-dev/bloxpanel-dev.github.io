@@ -284,25 +284,31 @@ def discord_info():
     return render_template("discord.html")
 
 
-def get_roblox_user_data(username):
+def get_roblox_user_data(input_value):
     try:
-        user_lookup_url = "https://users.roblox.com/v1/usernames/users"
-        response = requests.post(
-            user_lookup_url, json={"usernames": [username], "excludeBannedUsers": False}
-        )
+        # If input is all digits, treat as user ID
+        if input_value.isdigit():
+            user_id = int(input_value)
+        else:
+            # Look up the ID from the username
+            user_lookup_url = "https://users.roblox.com/v1/usernames/users"
+            response = requests.post(
+                user_lookup_url,
+                json={"usernames": [input_value], "excludeBannedUsers": False}
+            )
 
-        if response.status_code != 200:
-            print("Failed to get user ID")
-            return None
+            if response.status_code != 200:
+                print("Failed to get user ID")
+                return None
 
-        data = response.json()
-        if not data.get("data"):
-            print("Username not found")
-            return None
+            data = response.json()
+            if not data.get("data"):
+                print("Username not found")
+                return None
 
-        user = data["data"][0]
-        user_id = user["id"]
+            user_id = data["data"][0]["id"]
 
+        # Fetch profile info
         profile_response = requests.get(f"https://users.roblox.com/v1/users/{user_id}")
         if profile_response.status_code != 200:
             print("Failed to fetch profile info")
@@ -310,6 +316,7 @@ def get_roblox_user_data(username):
 
         profile = profile_response.json()
 
+        # Fetch avatar thumbnail
         thumbnail_response = requests.get(
             f"https://thumbnails.roblox.com/v1/users/avatar?userIds={user_id}&size=420x420&format=Png&isCircular=false"
         )
@@ -333,9 +340,9 @@ def get_roblox_user_data(username):
             "accountAge": account_age,
             "description": profile.get("description"),
             "avatarBustUrl": avatar_url,
-            "friends": "No active Logic",  # placeholder
-            "followers": "No active Logic",  # placeholder
-            "following": "No active Logic",  # placeholder
+            "friends": "No active Logic",
+            "followers": "No active Logic",
+            "following": "No active Logic",
             "voiceChat": "No active Logic",
             "safeChat": "No active Logic",
             "language": "No active Logic",
@@ -348,14 +355,14 @@ def get_roblox_user_data(username):
 
 @app.route("/details", methods=["GET"])
 def details():
-    username = request.args.get("username")
-    if not username:
-        return render_template("details.html", error="No username provided")
+    input_value = request.args.get("username") or request.args.get("userid")
+    if not input_value:
+        return render_template("details.html", error="No username or ID provided")
 
-    user_data = get_roblox_user_data(username)
+    user_data = get_roblox_user_data(input_value)
 
     if not user_data:
-        return render_template("details.html", error="Failed to load user data", username=username)
+        return render_template("details.html", error="Failed to load user data", username=input_value)
 
     return render_template("details.html", user=user_data)
 

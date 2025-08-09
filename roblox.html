@@ -89,7 +89,7 @@
 
   <div class="content" style="padding-bottom: 20px; padding-left: 20px; padding-right: 20px; padding-top: 20px;">
     <h1>🔍 Player Lookup</h1>
-    <h3>Search by username, ID, or Discord</h3>
+    <h3>Search by username, or ID</h3>
     <form id="lookupForm">
       <input type="text" id="username" placeholder="Enter Username" required />
       <button type="submit">Lookup</button>
@@ -97,15 +97,22 @@
   </div>
 
   <script>
-    const form = document.getElementById('lookupForm');
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      if (username) {
-        // Redirect to /details page with username as query param
-        window.location.href = `/details?username=${encodeURIComponent(username)}`;
-      }
-    });
-  </script>
+  const form = document.getElementById('lookupForm');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const input = document.getElementById('username').value.trim();
+
+    if (!input) return;
+
+    if (/^\d+$/.test(input)) {
+      // All digits → treat as Roblox user ID
+      window.location.href = `/details?userid=${encodeURIComponent(input)}`;
+    } else {
+      // Otherwise → treat as Roblox username
+      window.location.href = `/details?username=${encodeURIComponent(input)}`;
+    }
+  });
+</script>
+
 </body>
 </html>
