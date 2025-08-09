@@ -5,6 +5,10 @@ from flask import Flask, redirect, request, session, url_for, render_template, j
 from dotenv import load_dotenv
 from flask_cors import CORS, cross_origin
 import json
+import uuid
+
+session_id = str(uuid.uuid4())
+print(session_id)
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
@@ -381,11 +385,12 @@ def add_chatlog():
         "username": data["username"],
         "userId": data.get("userId", None),
         "message": data["message"],
-        "timestamp": data["timestamp"]
+        "timestamp": data["timestamp"],
+        "session_id": session_id  # Add session ID here
     })
     save_chatlogs(logs)
 
-    return jsonify({"success": True}), 200
+    return jsonify({"success": True, "session_id": session_id}), 200
 
 @app.route("/api/chatlogs", methods=["GET"])
 def get_chatlogs():
